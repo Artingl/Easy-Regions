@@ -104,7 +104,7 @@ public class RegionEvents implements Listener {
 
     @EventHandler(priority = EventPriority.HIGHEST)
     public void playerInteract3(PlayerInteractAtEntityEvent event) {
-        // todo: does not work with villagers
+        // fixme: does not work with villagers
         event.setCancelled(!handleEntityEvent(event.getPlayer(), event.getRightClicked(), event.getRightClicked().getLocation(), true));
     }
 

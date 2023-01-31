@@ -11,6 +11,9 @@ import org.bukkit.World;
 import org.bukkit.entity.Player;
 
 import java.text.MessageFormat;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.List;
 import java.util.Map;
 
 public class CreateRegionCommandRunner implements CommandRunner {
@@ -42,7 +45,7 @@ public class CreateRegionCommandRunner implements CommandRunner {
                 new RegionPosition(minX, minY, minZ),
                 new RegionPosition(maxX, maxY, maxZ),
                 player.getWorld(),
-                player,
+                List.of(player.getUniqueId()),
                 regionName
         );
 

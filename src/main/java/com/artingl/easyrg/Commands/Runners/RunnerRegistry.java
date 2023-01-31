@@ -61,7 +61,7 @@ public class RunnerRegistry {
 
                 return val.newInstance().run(player, player.getWorld(), args);
             } catch (Exception e) {
-                PluginMain.logger.log(Level.SEVERE, "Unable to initialize packet in registry!", e);
+                PluginMain.logger.log(Level.SEVERE, "Unable to create new instance of CommandRunner!", e);
                 System.exit(1);
             }
 

@@ -3,9 +3,7 @@ package com.artingl.easyrg.misc.Database.Field;
 import com.artingl.easyrg.misc.Serializable;
 import org.bukkit.util.BoundingBox;
 
-import java.util.List;
-import java.util.Map;
-import java.util.UUID;
+import java.util.*;
 
 public class ModelField <T> {
 
@@ -21,6 +19,10 @@ public class ModelField <T> {
 
     public ModelField(String name, String settings) {
         this.settings = settings;
+        this.name = name;
+    }
+
+    public ModelField(String name) {
         this.name = name;
     }
 
@@ -101,5 +103,32 @@ public class ModelField <T> {
 
     public String fieldSettings() {
         return settings;
+    }
+
+    public void clear() {
+        if (value == null)
+            return;
+
+        if (value instanceof Map)
+            ((Map<?, ?>) value).clear();
+
+        if (value instanceof List)
+            ((List<?>) value).clear();
+
+        set(null);
+    }
+
+    public void initializeList() {
+        if (value == null)
+            value = (T) new ArrayList<>();
+        else
+            ((List<?>) value).clear();
+    }
+
+    public void initializeMap() {
+        if (value == null)
+            value = (T) new HashMap<>();
+        else
+            ((Map<?, ?>) value).clear();
     }
 }

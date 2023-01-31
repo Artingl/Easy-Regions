@@ -1,15 +1,14 @@
 package com.artingl.easyrg.misc.Database.MySQL;
 
 import com.artingl.easyrg.misc.Database.DatabaseProvider;
-import com.artingl.easyrg.misc.Database.DatabaseResult;
 import com.artingl.easyrg.misc.Database.Field.DatabaseModel;
 import com.artingl.easyrg.misc.Database.Field.ModelCondition;
-import com.artingl.easyrg.misc.Database.Field.ModelField;
 
 import java.sql.PreparedStatement;
+import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
-import java.util.Map;
+import java.util.function.Consumer;
 
 public class MySQLProvider implements DatabaseProvider {
 
@@ -28,13 +27,13 @@ public class MySQLProvider implements DatabaseProvider {
     }
 
     @Override
-    public Map.Entry<DatabaseResult, ModelField[]> getValue(DatabaseModel model, ModelCondition... keys) {
-        return null;
+    public boolean getValue(Consumer<ResultSet> callback, DatabaseModel model, ModelCondition... keys) {
+        return false;
     }
 
     @Override
-    public DatabaseResult setValue(DatabaseModel model) throws NullPointerException, SQLException {
-        return null;
+    public boolean setValue(DatabaseModel model) throws NullPointerException, SQLException {
+        return false;
     }
 
     @Override

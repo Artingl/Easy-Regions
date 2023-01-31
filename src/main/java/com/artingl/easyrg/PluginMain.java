@@ -9,10 +9,13 @@ import com.artingl.easyrg.Permissions.Permissions;
 import com.artingl.easyrg.Storage.Storage;
 import com.artingl.easyrg.misc.Database.DatabaseProvider;
 import com.artingl.easyrg.misc.Database.Field.Fields.RegionModel;
+import com.artingl.easyrg.misc.Database.Field.ModelCondition;
+import com.artingl.easyrg.misc.Database.Field.ModelField;
 import com.artingl.easyrg.misc.Database.Field.ModelsRegistry;
 import com.artingl.easyrg.misc.Database.MySQL.MySQLProvider;
 import com.artingl.easyrg.misc.Database.SQLite.SQLiteProvider;
 import com.artingl.easyrg.misc.Protocol.PacketsRegistry;
+import com.artingl.easyrg.misc.Regions.Region;
 import com.artingl.easyrg.misc.Regions.RegionFlags;
 import com.artingl.easyrg.misc.Regions.RegionsRegistry;
 import com.artingl.easyrg.misc.Utilities.ChatUtils;
@@ -142,22 +145,35 @@ public class PluginMain extends JavaPlugin {
             logger.info("Loading completed.");
             this.setEnabled(true);
 
-            List<UUID> owners = new ArrayList<>();
-            owners.add(Bukkit.getPlayer("WildYummy_").getUniqueId());
+//            List<UUID> members = new ArrayList<>();
+//            members.add(Bukkit.getPlayer("WildYummy_").getUniqueId());
+//
+//            Map<RegionFlags, Object> flags = new HashMap<>();
+//            flags.put(RegionFlags.DISABLE_PVP, true);
+//
+//            RegionModel model = new RegionModel();
+//            model.members.set(members);
+//            model.world.set("world");
+//            model.flags.set(flags);
+//            model.name.set("huilo");
+//
+//            model.minX.set(-1d);
+//            model.minY.set(-2d);
+//            model.minZ.set(-10d);
+//
+//            model.maxX.set(10d);
+//            model.maxY.set(4d);
+//            model.maxZ.set(15d);
+//
+//            PluginMain.instance.getDatabaseProvider().setValue(model);
 
-            Map<RegionFlags, Object> flags = new HashMap<>();
-            flags.put(RegionFlags.DISABLE_PVP, true);
+
 
             RegionModel model = new RegionModel();
-            model.owners.set(owners);
-            model.boundingBox.set(new BoundingBox());
-            model.world.set("OVERWORLD");
-            model.flags.set(flags);
+            Region region = model.get(
+                    ModelCondition.make(new ModelField<>("id"), ModelCondition.Conditions.EQUALS, 1));
 
-            PluginMain.instance.getDatabaseProvider().setValue(model);
-
-//            PluginMain.instance.getDatabaseProvider().getValue(model,
-//                    ModelCondition.make(model.id, ModelCondition.Conditions.EQUALS, 0));
+            System.out.println(region);
 
         } catch (Exception e) {
             PluginMain.logger.log(Level.SEVERE, "Unable to load the plugin.", e);

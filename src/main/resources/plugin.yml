@@ -7,6 +7,7 @@ load: POSTWORLD
 
 description: A plugin to provide ability to guard player's buildings.
 author: Artingl
+website: https://github.com/Artingl/Easy-Regions
 main: com.artingl.easyrg.PluginMain
 
 commands:

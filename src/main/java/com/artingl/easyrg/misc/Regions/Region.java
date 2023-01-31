@@ -6,30 +6,33 @@ import org.bukkit.World;
 import org.bukkit.entity.Player;
 import org.bukkit.util.BoundingBox;
 
-import java.util.HashMap;
-import java.util.Map;
+import java.util.*;
 
 public class Region {
 
     private final BoundingBox boundingBox;
     private final World world;
-    private final Player initialOwner;
+    private final List<UUID> members;
     private final String name;
     private Map<RegionFlags, Object> flags;
 
-    public Region(RegionPosition start, RegionPosition end, World world, Player initialOwner, String name) {
-        this.name = name;
-        this.flags = new HashMap<>();
-        this.world = world;
-        this.initialOwner = initialOwner;
-        this.boundingBox = new BoundingBox(
-                start.getX(), start.getY(), start.getZ(),
-                end.getX(), end.getY(), end.getZ()
-        );
+    public Region(RegionPosition start, RegionPosition end, World world, List<UUID> members, String name) {
+        this(start, end, world, members, new HashMap<>(), name);
 
         this.flags.put(RegionFlags.FALL_DISABLE_DAMAGE, false);
         this.flags.put(RegionFlags.MOB_SPAWN, true);
         this.flags.put(RegionFlags.DISABLE_PVP, false);
+    }
+
+    public Region(RegionPosition start, RegionPosition end, World world, List<UUID> members, Map<RegionFlags, Object> flags, String name) {
+        this.name = name;
+        this.flags = Map.copyOf(flags);
+        this.world = world;
+        this.members = List.copyOf(members);
+        this.boundingBox = new BoundingBox(
+                start.getX(), start.getY(), start.getZ(),
+                end.getX(), end.getY(), end.getZ()
+        );
     }
 
     public BoundingBox getBoundingBox() {
@@ -48,8 +51,8 @@ public class Region {
         return world;
     }
 
-    public Player getInitialOwner() {
-        return initialOwner;
+    public List<UUID> getMembers() {
+        return members;
     }
 
     public Object getFlag(RegionFlags flag) {
@@ -64,10 +67,10 @@ public class Region {
         if (Permissions.hasPermission(player, Permissions.REGIONS_FULL_ACCESS))
             return true;
 
-        if (initialOwner == null)
+        if (members == null)
             return false;
 
-        return player.getUniqueId().equals(initialOwner.getUniqueId());
+        return members.contains(player.getUniqueId());
     }
 
     public String getName() {
@@ -76,7 +79,7 @@ public class Region {
 
     @Override
     public String toString() {
-        return "Region{initialOwner=" + initialOwner.getUniqueId() + ", world=" + world.getName() + "}";
+        return "Region{members=" + members + ", flags=" + flags + ", name=" + name + ", world=" + world.getName() + "}";
     }
 
     @Override

@@ -15,8 +15,9 @@ import java.util.Objects;
 
 public class CommandEsr implements CommandExecutor, TabCompleter {
 
+    // fixme: should be rewritten
+
     private boolean help(CommandSender sender) {
-        PluginMain.instance.reload();
         StringBuilder result = new StringBuilder();
 
         result.append(MessageFormat.format(

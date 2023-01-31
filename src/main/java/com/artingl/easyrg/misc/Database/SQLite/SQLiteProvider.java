@@ -2,7 +2,6 @@ package com.artingl.easyrg.misc.Database.SQLite;
 
 import com.artingl.easyrg.PluginMain;
 import com.artingl.easyrg.misc.Database.DatabaseProvider;
-import com.artingl.easyrg.misc.Database.DatabaseResult;
 import com.artingl.easyrg.misc.Database.Field.DatabaseModel;
 import com.artingl.easyrg.misc.Database.Field.ModelCondition;
 import com.artingl.easyrg.misc.Database.Field.ModelField;
@@ -13,7 +12,7 @@ import java.sql.*;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
-import java.util.Map;
+import java.util.function.Consumer;
 import java.util.logging.Level;
 
 public class SQLiteProvider implements DatabaseProvider {
@@ -42,7 +41,7 @@ public class SQLiteProvider implements DatabaseProvider {
                     DatabaseModel model = ModelsRegistry.modelsList.get(modelClass);
                     StringBuilder syntax = new StringBuilder();
 
-                    syntax.append("id int IDENTITY(1,1) PRIMARY KEY,");
+                    syntax.append("id INTEGER PRIMARY KEY,");
 
                     for (ModelField field : model.fields()) {
                         syntax.append(field.name()).append(" ").append(field.fieldSettings()).append(",");
@@ -89,26 +88,37 @@ public class SQLiteProvider implements DatabaseProvider {
     }
 
     @Override
-    public Map.Entry<DatabaseResult, ModelField[]> getValue(DatabaseModel model, ModelCondition... keys) {
-        StringBuilder where = new StringBuilder();
+    public boolean getValue(Consumer<ResultSet> callback, DatabaseModel model, ModelCondition... keys) throws SQLException {
+        Statement statement = createStatement();
 
-        for (ModelCondition condition: keys) {
-            where.append(condition.getAsString()).append(",");
+        try {
+            StringBuilder where = new StringBuilder();
+
+            for (ModelCondition condition : keys) {
+                where.append(condition.getAsString()).append(",");
+            }
+
+            String sql = "select * from " + model.name() + " where " + where.substring(0, where.length() - 1);
+
+            if (!statement.execute(sql)) {
+                freeStatement(statement);
+                callback.accept(null);
+                return false;
+            }
+
+            callback.accept(statement.getResultSet());
+            return true;
+        } finally {
+            freeStatement(statement);
         }
-
-        String sql = "SELECT * FROM " + model.name() + " WHERE " + where.substring(0, where.length()-1);
-
-        System.out.println(sql);
-
-        return null;
     }
 
     @Override
-    public DatabaseResult setValue(DatabaseModel model) throws NullPointerException, SQLException {
+    public boolean setValue(DatabaseModel model) throws NullPointerException, SQLException {
         if (model == null)
             throw new NullPointerException("Model is null");
 
-        List<ModelField> fields = model.fields();
+        List<ModelField<?>> fields = model.fields();
         List<String> names = model.names();
 
         PreparedStatement statement = prepareStatement(
@@ -118,20 +128,24 @@ public class SQLiteProvider implements DatabaseProvider {
         );
 
         try {
-            for (ModelField field : fields) {
+            int i = 1;
+
+            for (ModelField<?> field : fields) {
                 String serialized = field.serialize();
 
                 if (serialized != null) {
-                    statement.setString(1, serialized);
+                    statement.setString(i, serialized);
                 }
+
+                ++i;
             }
 
-            System.out.println(statement.executeUpdate());
+            statement.executeUpdate();
         } finally {
             freeStatement(statement);
         }
 
-        return DatabaseResult.OK;
+        return true;
     }
 
     @Override

@@ -22,7 +22,7 @@ public class RegionSelectionItem extends StorageItem {
 
     @Override
     public String toString() {
-        return "PlayerSelectionsItem{type=" + type + ", location=" + location + "}";
+        return "RegionSelectionItem{type=" + type + ", location=" + location + "}";
     }
 
     @Override
