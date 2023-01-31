@@ -1,0 +1,23 @@
+depend: [ ProtocolLib ]
+softdepend: [ LuckPerms ]
+name: EasyRegions
+version: 1.0
+api-version: 1.16
+load: POSTWORLD
+
+description: A plugin to provide ability to guard player's buildings.
+author: Artingl
+main: com.artingl.easyrg.PluginMain
+
+commands:
+  easyrg:
+    description: Manage the plugin.
+    aliases: [ easyregions, esr, er ]
+
+  rg:
+    description: Manage player's regions.
+    aliases: [ region ]
+
+  selection:
+    description: Selection control.
+    aliases: [ sel, select ]

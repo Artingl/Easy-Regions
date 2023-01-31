@@ -1,0 +1,49 @@
+# Basic configuration
+prefix: "&7[&6E&eRG&7]"
+check-for-updates: true
+lang: en
+
+db:
+  enable: false
+  username: root
+  password: root
+  database: db
+  table-prefix: easyrg_
+
+  host: 127.0.0.1
+  port: 3306
+
+region-selection:
+  enable: true
+  enable-on-sneaking: false
+
+  # The size is in blocks.
+  # This will be calculated by getting distance between two selections
+  max-selection-size: 40
+
+  # Visual frame on region selection
+  visuals:
+    enable: true
+
+    # Rainbow effect in some parts of the plugin
+    # Rainbow speed in range from 1 to 16
+    rainbow:
+      enable: true
+      speed: 5
+
+    # Enable glowing
+    # detect-player option will observer player's position and
+    # would set the glowing color to "player-inside-color" if they're inside
+    # the region, or "player-outside-color" if outside
+    glowing:
+      enable: true
+      observer-player: true
+      player-inside-color: WHITE
+      player-outside-color: RED
+
+  sounds:
+    enable: true
+
+    # Region selection sounds
+    region-selection1: BLOCK_NOTE_BLOCK_BASS
+    region-selection2: BLOCK_NOTE_BLOCK_HARP

@@ -1,0 +1,24 @@
+plugin-info: "Easy Regions v{0} | Updates info: {1}"
+
+plugin-reloaded: "The plugin has been reloaded."
+invalid-argument: "&cInvalid argument &e{0}"
+not-enough-arguments-provided: "&cNot enough arguments provided!"
+no-permissions: "&cYou're not allowed to execute this command!"
+
+pos1-select: "First position has been set at &c{0} &a{1} &9{2}"
+pos2-select: "Second position has been set at &c{0} &a{1} &9{2}"
+selection-too-big: "Region is too big! Maximum size is &e{0}"
+
+sel-clear: "Selection cleared."
+sel-no-selection: "Nothing was selected."
+sel-processing: "Please wait for the command to process..."
+sel-set-invalid-block: "&cInvalid block &e{0}"
+sel-overlaps-region: "&cSelection overlaps with region."
+
+region-name-exists: "&cRegion with the same name already exists."
+region-overlaps: "&cRegion overlaps with other region."
+region-created: "Region &e{0}&f successfully created."
+region-not-found: "&cNo regions were found at this place."
+
+region-restriction: "&cYou can't affect this region."
+region-flag-restriction: "&cYou can't do it in this region."
