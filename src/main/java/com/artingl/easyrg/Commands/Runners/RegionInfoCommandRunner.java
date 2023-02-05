@@ -10,25 +10,38 @@ import org.bukkit.Location;
 import org.bukkit.World;
 import org.bukkit.entity.Player;
 
+import java.text.MessageFormat;
+import java.util.List;
+
 public class RegionInfoCommandRunner implements CommandRunner {
 
     @Override
     public boolean run(Player player, World world, String[] args) {
-        Region region = PluginMain.instance.getRegionsRegistry().getRegionAt(player.getLocation());
+        Region[] regions = PluginMain.instance.getRegionsRegistry().getRegionCollide(player.getBoundingBox());
 
-        if (region == null) {
-            ChatUtils.sendDecoratedMessage(player, PluginMain.instance.getLanguage().get("region-not-found").toString());
+        if (regions == null) {
+            ChatUtils.sendDecoratedMessage(player, PluginMain.instance.getLanguage().getString("region-not-found"));
+            PluginMain.instance.playCommandErrorSound(player);
             return false;
         }
 
-        Location loc0 = new Location(world, region.getBoundingBox().getMinX(), region.getBoundingBox().getMinY(), region.getBoundingBox().getMinZ());
-        Location loc1 = new Location(world, region.getBoundingBox().getMaxX(), region.getBoundingBox().getMaxY(), region.getBoundingBox().getMaxZ());
+        if (regions.length == 0) {
+            ChatUtils.sendDecoratedMessage(player, PluginMain.instance.getLanguage().getString("region-not-found"));
+            PluginMain.instance.playCommandErrorSound(player);
+            return false;
+        }
+
+        Location loc0 = new Location(world, regions[0].getBoundingBox().getMinX(), regions[0].getBoundingBox().getMinY(), regions[0].getBoundingBox().getMinZ());
+        Location loc1 = new Location(world, regions[0].getBoundingBox().getMaxX(), regions[0].getBoundingBox().getMaxY(), regions[0].getBoundingBox().getMaxZ());
 
         PluginMain.storage.setValue(player, new FirstPositionItem(loc0));
         PluginMain.storage.setValue(player, new SecondPositionItem(loc1));
         PluginMain.storage.setValue(player, new RegionFrameInfoItem(RegionFrameInfoItem.RegionFrameTypes.RG_INFO));
 
-        ChatUtils.sendDecoratedMessage(player, region.getName());
+        if (args.length >= 2)
+            regions[0].printInfo(player, Integer.parseInt(args[1]));
+        else
+            regions[0].printInfo(player);
 
         return true;
     }

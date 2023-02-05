@@ -9,7 +9,6 @@ import com.artingl.easyrg.misc.Utilities.MathUtils;
 import org.bukkit.*;
 import org.bukkit.configuration.ConfigurationSection;
 import org.bukkit.entity.ArmorStand;
-import org.bukkit.entity.Entity;
 import org.bukkit.entity.EntityType;
 import org.bukkit.entity.Player;
 import org.bukkit.inventory.ItemStack;
@@ -17,12 +16,11 @@ import org.bukkit.scheduler.BukkitRunnable;
 import org.bukkit.scoreboard.Scoreboard;
 import org.bukkit.scoreboard.Team;
 import org.bukkit.util.BoundingBox;
-import org.bukkit.util.Vector;
 
 import java.util.Map;
 import java.util.UUID;
 
-public class RegionsTickEvent extends BukkitRunnable {
+public class TickEvent extends BukkitRunnable {
 
     @Override
     public void run() {
@@ -40,8 +38,12 @@ public class RegionsTickEvent extends BukkitRunnable {
 
         boolean enableGlowing = glowing.getBoolean("enable");
         boolean observerPlayer = glowing.getBoolean("observer-player");
-        String glowingInsideColor = glowing.get("player-inside-color").toString();
-        String glowingOutsideColor = glowing.get("player-outside-color").toString();
+        String glowingInsideColor = glowing.getString("player-inside-color");
+        String glowingOutsideColor = glowing.getString("player-outside-color");
+
+        int maxSize = PluginMain.instance.getConfig()
+                .getConfigurationSection("region-selection")
+                .getInt("max-selection-size");
 
         if (!enableSelection) {
             PluginMain.storage.clear();
@@ -61,6 +63,7 @@ public class RegionsTickEvent extends BukkitRunnable {
                             player,
                             enableGlowing,
                             observerPlayer,
+                            maxSize,
                             glowingInsideColor,
                             glowingOutsideColor,
                             pos1,
@@ -79,11 +82,17 @@ public class RegionsTickEvent extends BukkitRunnable {
             Player player,
             boolean enableGlowing,
             boolean observerPlayer,
+            int maxSize,
             String glowingInsideColor,
             String glowingOutsideColor,
             FirstPositionItem pos1,
             SecondPositionItem pos2,
             RegionFrameInfoItem frameInfo) {
+
+        if (MathUtils.calculateLength(pos1.getLocation(), player.getLocation()) > maxSize * 4) {
+            PluginMain.storage.remove(player.getUniqueId());
+            return;
+        }
 
         double minX = Math.min(pos1.getLocation().getBlockX(), pos2.getLocation().getBlockX());
         double minY = Math.min(pos1.getLocation().getBlockY(), pos2.getLocation().getBlockY());
@@ -108,6 +117,13 @@ public class RegionsTickEvent extends BukkitRunnable {
             team.addEntry(player.getUniqueId().toString());
 
         if (frameInfo.getType().equals(RegionFrameInfoItem.RegionFrameTypes.FRAME)) {
+            if (boundingBox.overlaps(player.getBoundingBox()))
+                frameInfo.setLiveTime(300);
+            else if (frameInfo.getLiveTime(10) < 0) {
+                PluginMain.storage.remove(player.getUniqueId());
+                return;
+            }
+
             if (observerPlayer)
                 team.setColor(boundingBox.overlaps(player.getBoundingBox()) ?
                         ChatColor.valueOf(glowingInsideColor) : ChatColor.valueOf(glowingOutsideColor));

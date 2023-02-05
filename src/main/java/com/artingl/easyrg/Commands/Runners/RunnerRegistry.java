@@ -16,11 +16,15 @@ public class RunnerRegistry {
         commandsList.clear();
 
         commandsList.register(
-                OutlineCommandRunner.class,
+                SelOutlineCommandRunner.class,
                 SetCommandRunner.class,
                 ClearCommandRunner.class,
-                CreateRegionCommandRunner.class,
-                RegionInfoCommandRunner.class
+                RegionClaimCommandRunner.class,
+                RegionInfoCommandRunner.class,
+                RegionUnclaimCommandRunner.class,
+                RegionFlagCommandRunner.class,
+                RegionAddCommandRunner.class,
+                RegionRemoveCommandRunner.class
         );
     }
 
@@ -48,7 +52,7 @@ public class RunnerRegistry {
 
         public boolean execute(Class<? extends CommandRunner> clazz, Player player, String[] args, Permissions permission) {
             if (!permission.hasPermission(player)) {
-                ChatUtils.sendDecoratedMessage(player, PluginMain.instance.getLanguage().get("no-permissions").toString());
+                ChatUtils.sendDecoratedMessage(player, PluginMain.instance.getLanguage().getString("no-permissions"));
                 return false;
             }
 
@@ -61,8 +65,7 @@ public class RunnerRegistry {
 
                 return val.newInstance().run(player, player.getWorld(), args);
             } catch (Exception e) {
-                PluginMain.logger.log(Level.SEVERE, "Unable to create new instance of CommandRunner!", e);
-                System.exit(1);
+                PluginMain.logger.log(Level.SEVERE, "Unable to execute command!", e);
             }
 
             return false;

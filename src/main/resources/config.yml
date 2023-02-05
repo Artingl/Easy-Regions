@@ -5,6 +5,8 @@ lang: en
 
 db:
   enable: false
+  type: mysql
+
   username: root
   password: root
   database: db
@@ -12,6 +14,19 @@ db:
 
   host: 127.0.0.1
   port: 3306
+
+global-settings:
+  misc:
+    date-format: "MM/dd/yyyy HH:mm:ss"
+
+  sounds:
+    enable: true
+    command-error: ENTITY_VILLAGER_NO
+
+region-info:
+  sounds:
+    region-info-sound: ENTITY_EXPERIENCE_ORB_PICKUP
+    region-info-next-page: UI_BUTTON_CLICK
 
 region-selection:
   enable: true
@@ -42,8 +57,6 @@ region-selection:
       player-outside-color: RED
 
   sounds:
-    enable: true
-
     # Region selection sounds
     region-selection1: BLOCK_NOTE_BLOCK_BASS
     region-selection2: BLOCK_NOTE_BLOCK_HARP

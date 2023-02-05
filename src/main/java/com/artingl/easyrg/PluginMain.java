@@ -2,21 +2,17 @@ package com.artingl.easyrg;
 
 import com.artingl.easyrg.Commands.Commands;
 import com.artingl.easyrg.Commands.Runners.RunnerRegistry;
+import com.artingl.easyrg.Events.AsyncTickEvent;
 import com.artingl.easyrg.Events.Events;
-import com.artingl.easyrg.Events.RegionsTickEvent;
+import com.artingl.easyrg.Events.TickEvent;
 import com.artingl.easyrg.Logger.MWLogger;
 import com.artingl.easyrg.Permissions.Permissions;
 import com.artingl.easyrg.Storage.Storage;
 import com.artingl.easyrg.misc.Database.DatabaseProvider;
-import com.artingl.easyrg.misc.Database.Field.Fields.RegionModel;
-import com.artingl.easyrg.misc.Database.Field.ModelCondition;
-import com.artingl.easyrg.misc.Database.Field.ModelField;
 import com.artingl.easyrg.misc.Database.Field.ModelsRegistry;
 import com.artingl.easyrg.misc.Database.MySQL.MySQLProvider;
 import com.artingl.easyrg.misc.Database.SQLite.SQLiteProvider;
 import com.artingl.easyrg.misc.Protocol.PacketsRegistry;
-import com.artingl.easyrg.misc.Regions.Region;
-import com.artingl.easyrg.misc.Regions.RegionFlags;
 import com.artingl.easyrg.misc.Regions.RegionsRegistry;
 import com.artingl.easyrg.misc.Utilities.ChatUtils;
 import com.artingl.easyrg.misc.Utilities.ConfigUtils;
@@ -24,18 +20,20 @@ import net.luckperms.api.LuckPerms;
 import net.luckperms.api.node.types.PermissionNode;
 import org.bukkit.Bukkit;
 import org.bukkit.Material;
+import org.bukkit.Sound;
 import org.bukkit.configuration.ConfigurationSection;
 import org.bukkit.configuration.file.FileConfiguration;
 import org.bukkit.configuration.file.YamlConfiguration;
+import org.bukkit.entity.Player;
 import org.bukkit.event.HandlerList;
 import org.bukkit.plugin.PluginDescriptionFile;
 import org.bukkit.plugin.RegisteredServiceProvider;
 import org.bukkit.plugin.java.JavaPlugin;
-import org.bukkit.util.BoundingBox;
 
 import java.io.File;
 import java.io.FileNotFoundException;
-import java.util.*;
+import java.util.Locale;
+import java.util.Objects;
 import java.util.logging.Level;
 
 
@@ -49,16 +47,19 @@ public class PluginMain extends JavaPlugin {
 
     private LuckPerms luckPerms;
     private FileConfiguration language;
-    private RegionsTickEvent regionsTickRunnable;
+    private TickEvent tickEvent;
+    private AsyncTickEvent asyncTickEvent;
     private RegionsRegistry regionsRegistry;
     private DatabaseProvider databaseProvider;
+    private String prefix;
 
     public PluginMain() {
         instance = this;
         logger = new MWLogger();
         storage = new Storage();
         regionsRegistry = new RegionsRegistry();
-        regionsTickRunnable = new RegionsTickEvent();
+        tickEvent = new TickEvent();
+        asyncTickEvent = new AsyncTickEvent();
 
         for (Material material: Material.values()) {
             ChatUtils.MATERIALS_LIST.add(material.getKey().toString());
@@ -89,6 +90,7 @@ public class PluginMain extends JavaPlugin {
 
             this.saveDefaultConfig();
             this.reloadConfig();
+            this.prefix = PluginMain.instance.getConfig().getString("prefix");
 
             try {
                 for (String fileName : configFiles) {
@@ -127,7 +129,9 @@ public class PluginMain extends JavaPlugin {
 
             // Initialize necessary parts of the plugin
             storage.clear();
-            regionsTickRunnable.runTaskTimer(this, 10L, 10L);
+            regionsRegistry.setDatabaseProvider(databaseProvider);
+            tickEvent.runTaskTimer(this, 10L, 10L);
+            asyncTickEvent.runTaskAsynchronously(this);
 
             reloadLanguage();
             Commands.register();
@@ -145,35 +149,13 @@ public class PluginMain extends JavaPlugin {
             logger.info("Loading completed.");
             this.setEnabled(true);
 
-//            List<UUID> members = new ArrayList<>();
-//            members.add(Bukkit.getPlayer("WildYummy_").getUniqueId());
-//
-//            Map<RegionFlags, Object> flags = new HashMap<>();
-//            flags.put(RegionFlags.DISABLE_PVP, true);
-//
+
+
 //            RegionModel model = new RegionModel();
-//            model.members.set(members);
-//            model.world.set("world");
-//            model.flags.set(flags);
-//            model.name.set("huilo");
+//            Region region = model.get(
+//                    ModelCondition.make(new ModelField<>("id"), ModelCondition.Conditions.EQUALS, 1));
 //
-//            model.minX.set(-1d);
-//            model.minY.set(-2d);
-//            model.minZ.set(-10d);
-//
-//            model.maxX.set(10d);
-//            model.maxY.set(4d);
-//            model.maxZ.set(15d);
-//
-//            PluginMain.instance.getDatabaseProvider().setValue(model);
-
-
-
-            RegionModel model = new RegionModel();
-            Region region = model.get(
-                    ModelCondition.make(new ModelField<>("id"), ModelCondition.Conditions.EQUALS, 1));
-
-            System.out.println(region);
+//            System.out.println(region);
 
         } catch (Exception e) {
             PluginMain.logger.log(Level.SEVERE, "Unable to load the plugin.", e);
@@ -199,7 +181,8 @@ public class PluginMain extends JavaPlugin {
 
         PacketsRegistry.unregister();
         HandlerList.unregisterAll(PluginMain.instance);
-        regionsTickRunnable.cancel();
+        tickEvent.cancel();
+        asyncTickEvent.cancel();
         storage.clear();
         databaseProvider.shutdown();
     }
@@ -228,6 +211,27 @@ public class PluginMain extends JavaPlugin {
         return databaseProvider;
     }
 
+    public String getPrefix() {
+        return prefix;
+    }
+
+    public boolean isSoundEnabled() {
+        return getConfig()
+                .getConfigurationSection("global-settings")
+                .getConfigurationSection("sounds")
+                .getBoolean("enable");
+    }
+
+    public void playCommandErrorSound(Player player) {
+        if (player == null || !isSoundEnabled())
+            return;
+
+        player.playSound(player.getLocation(), Sound.valueOf(getConfig()
+                .getConfigurationSection("global-settings")
+                .getConfigurationSection("sounds")
+                .getString("command-error")), 1, 1);
+    }
+
     private void reloadLanguage() {
         // Load the language for the plugin that has been set in config.yml
         File langFile = new File(getDataFolder().getAbsolutePath() + "/" + getConfig().get("lang") + "-messages.yml");
@@ -239,6 +243,6 @@ public class PluginMain extends JavaPlugin {
         }
 
         this.language = YamlConfiguration.loadConfiguration(langFile);
-        logger.info(Objects.requireNonNull(getConfig().get("lang")).toString().toUpperCase(Locale.ROOT) + " language loaded!");
+        logger.info(Objects.requireNonNull(getConfig().getString("lang")).toUpperCase(Locale.ROOT) + " language loaded!");
     }
 }

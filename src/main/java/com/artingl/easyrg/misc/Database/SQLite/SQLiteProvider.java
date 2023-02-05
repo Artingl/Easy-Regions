@@ -99,14 +99,7 @@ public class SQLiteProvider implements DatabaseProvider {
             }
 
             String sql = "select * from " + model.name() + " where " + where.substring(0, where.length() - 1);
-
-            if (!statement.execute(sql)) {
-                freeStatement(statement);
-                callback.accept(null);
-                return false;
-            }
-
-            callback.accept(statement.getResultSet());
+            callback.accept(statement.executeQuery(sql));
             return true;
         } finally {
             freeStatement(statement);
@@ -146,6 +139,41 @@ public class SQLiteProvider implements DatabaseProvider {
         }
 
         return true;
+    }
+
+    @Override
+    public boolean delete(DatabaseModel model) throws SQLException {
+        Statement statement = createStatement();
+
+        try {
+            return statement.execute("delete from " + model.name() + " where " + model.identifierSQL());
+        } finally {
+            freeStatement(statement);
+        }
+    }
+
+    @Override
+    public boolean update(DatabaseModel model) throws SQLException {
+        Statement statement = createStatement();
+
+        try {
+            StringBuilder values = new StringBuilder();
+
+            for (ModelField<?> field : model.fields()) {
+                String serialized = field.serialize();
+
+                if (serialized != null) {
+                    values.append('\'').append(field.name()).append("'=").append('\'').append(serialized).append("',");
+                }
+            }
+
+            String sql = "update " + model.name() + " set " + values.substring(0, values.length()-1) + " where " + model.identifierSQL();
+            statement.execute(sql);
+
+            return true;
+        } finally {
+            freeStatement(statement);
+        }
     }
 
     @Override

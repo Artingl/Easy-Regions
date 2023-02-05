@@ -50,4 +50,14 @@ public class MySQLProvider implements DatabaseProvider {
     public void freeStatement(Statement statement) {
 
     }
+
+    @Override
+    public boolean delete(DatabaseModel model) {
+        return false;
+    }
+
+    @Override
+    public boolean update(DatabaseModel model) {
+        return false;
+    }
 }

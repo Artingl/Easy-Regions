@@ -17,22 +17,24 @@ import org.bukkit.event.Listener;
 import org.bukkit.event.block.Action;
 import org.bukkit.event.entity.EntityDamageEvent;
 import org.bukkit.event.player.PlayerInteractEvent;
+import org.bukkit.event.player.PlayerJoinEvent;
 import org.bukkit.event.player.PlayerQuitEvent;
 import org.bukkit.inventory.ItemStack;
 
 import java.text.MessageFormat;
+import java.util.Objects;
 
 public class PlayerEvents implements Listener {
 
     @EventHandler(priority = EventPriority.HIGHEST)
     public void playerItemUseEvent(PlayerInteractEvent event) {
-        String pos1 = PluginMain.instance.getLanguage().get("pos1-select").toString();
-        String pos2 = PluginMain.instance.getLanguage().get("pos2-select").toString();
+        String pos1 = PluginMain.instance.getLanguage().getString("pos1-select");
+        String pos2 = PluginMain.instance.getLanguage().getString("pos2-select");
 
         ConfigurationSection section = PluginMain.instance.getConfig()
                 .getConfigurationSection("region-selection");
 
-        boolean enableSounds = section.getConfigurationSection("sounds").getBoolean("enable");
+        boolean enableSounds = PluginMain.instance.isSoundEnabled();
         boolean enableOnSneaking = section.getBoolean("enable-on-sneaking");
         boolean enable = section.getBoolean("enable");
 
@@ -60,7 +62,7 @@ public class PlayerEvents implements Listener {
                                 if (MathUtils.calculateLength(lastPos2.getLocation(), location) > maxSize) {
                                     ChatUtils.sendDecoratedMessage(player,
                                             MessageFormat.format(
-                                                    PluginMain.instance.getLanguage().get("selection-too-big").toString(),
+                                                    Objects.requireNonNull(PluginMain.instance.getLanguage().getString("selection-too-big")),
                                                     maxSize
                                             )
                                     );
@@ -80,7 +82,7 @@ public class PlayerEvents implements Listener {
                                 if (MathUtils.calculateLength(lastPos1.getLocation(), location) > maxSize) {
                                     ChatUtils.sendDecoratedMessage(player,
                                             MessageFormat.format(
-                                                    PluginMain.instance.getLanguage().get("selection-too-big").toString(),
+                                                    Objects.requireNonNull(PluginMain.instance.getLanguage().getString("selection-too-big")),
                                                     maxSize
                                             )
                                     );
@@ -105,11 +107,6 @@ public class PlayerEvents implements Listener {
                 }
             }
         }
-    }
-
-    @EventHandler
-    public void playerQuitEvent(PlayerQuitEvent event) {
-        PluginMain.storage.remove(event.getPlayer().getUniqueId());
     }
 
     @EventHandler(priority = EventPriority.HIGHEST)

@@ -4,18 +4,24 @@ import com.artingl.easyrg.PluginMain;
 import com.artingl.easyrg.misc.Regions.Region;
 import com.artingl.easyrg.misc.Regions.RegionFlags;
 import com.artingl.easyrg.misc.Utilities.ChatUtils;
+import com.artingl.easyrg.misc.Utilities.WorldUtils;
 import org.bukkit.Location;
+import org.bukkit.block.Block;
+import org.bukkit.block.BlockFace;
 import org.bukkit.entity.Entity;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.EventPriority;
 import org.bukkit.event.Listener;
-import org.bukkit.event.block.BlockBreakEvent;
-import org.bukkit.event.block.BlockPlaceEvent;
+import org.bukkit.event.block.*;
 import org.bukkit.event.entity.EntityDamageByEntityEvent;
 import org.bukkit.event.entity.EntityDamageEvent;
+import org.bukkit.event.entity.EntityExplodeEvent;
 import org.bukkit.event.player.*;
+import org.bukkit.inventory.EquipmentSlot;
 import org.bukkit.util.Vector;
+
+import java.util.Objects;
 
 public class RegionEvents implements Listener {
 
@@ -23,9 +29,9 @@ public class RegionEvents implements Listener {
         Region region = PluginMain.instance.getRegionsRegistry().getRegionAt(location);
 
         if (region != null) {
-            if (region.hasAccess(player)) {
+            if (!region.hasAccess(player)) {
                 if (showMessage)
-                    ChatUtils.sendDecoratedMessage(player, PluginMain.instance.getLanguage().get("region-restriction").toString());
+                    ChatUtils.sendDecoratedMessage(player, PluginMain.instance.getLanguage().getString("region-restriction"));
                 return false;
             }
         }
@@ -39,7 +45,7 @@ public class RegionEvents implements Listener {
         if (region != null) {
             if (!region.hasAccess(player)) {
                 if (showMessage)
-                    ChatUtils.sendDecoratedMessage(player, PluginMain.instance.getLanguage().get("region-restriction").toString());
+                    ChatUtils.sendDecoratedMessage(player, PluginMain.instance.getLanguage().getString("region-restriction"));
                 return false;
             }
         }
@@ -55,14 +61,14 @@ public class RegionEvents implements Listener {
             if (flagObj instanceof Boolean) {
                 if ((boolean)flagObj) {
                     if (showMessage)
-                        ChatUtils.sendDecoratedMessage(player, PluginMain.instance.getLanguage().get("region-flag-restriction").toString());
+                        ChatUtils.sendDecoratedMessage(player, PluginMain.instance.getLanguage().getString("region-flag-restriction"));
                     return false;
                 }
             }
 
             if (!region.hasAccess(player) && !(dest instanceof Player)) {
                 if (showMessage)
-                    ChatUtils.sendDecoratedMessage(player, PluginMain.instance.getLanguage().get("region-flag-restriction").toString());
+                    ChatUtils.sendDecoratedMessage(player, PluginMain.instance.getLanguage().getString("region-flag-restriction"));
                 return false;
             }
         }
@@ -71,18 +77,105 @@ public class RegionEvents implements Listener {
     }
 
     @EventHandler(priority = EventPriority.HIGHEST)
-    public void playerInteract0(PlayerInteractEvent event) {
-        switch (event.getAction()) {
-            case LEFT_CLICK_AIR:
-            case RIGHT_CLICK_AIR: {
-                if (event.getClickedBlock() != null)
-                    event.setCancelled(!handleRegionEvent(event.getPlayer(), event.getClickedBlock().getLocation(), true));
+    public void explodeEvent(EntityExplodeEvent event) {
+    }
+
+    @EventHandler(priority = EventPriority.HIGHEST)
+    public void blockSpreadEvent(BlockSpreadEvent event) {
+        Region region0 = PluginMain.instance.getRegionsRegistry().getRegionAt(event.getSource().getLocation());
+        Region region1 = PluginMain.instance.getRegionsRegistry().getRegionAt(event.getBlock().getLocation());
+
+        if ((region0 == null && region1 != null)
+                || (region1 == null && region0 != null)) {
+            event.setCancelled(true);
+        }
+    }
+
+    @EventHandler(priority = EventPriority.HIGHEST)
+    public void redstoneEvent(BlockRedstoneEvent event) {
+        Block block = event.getBlock();
+        Region region0 = PluginMain.instance.getRegionsRegistry().getRegionAt(block.getLocation());
+
+        BlockFace[] blockFaces = {
+                BlockFace.NORTH,
+                BlockFace.SOUTH,
+                BlockFace.EAST,
+                BlockFace.WEST,
+                BlockFace.DOWN,
+                BlockFace.UP,
+        };
+
+        for (BlockFace blockFace: blockFaces) {
+            Block relative = block.getRelative(blockFace);
+            Region region1 = PluginMain.instance.getRegionsRegistry().getRegionAt(relative.getLocation());
+
+            if ((region0 == null && region1 != null && !(boolean)region1.getFlag(RegionFlags.ALLOW_REDSTONE))
+                    || (region1 == null && region0 != null && !(boolean)region0.getFlag(RegionFlags.ALLOW_REDSTONE))) {
+                event.setNewCurrent(0);
                 break;
             }
+        }
+    }
 
-            case PHYSICAL: {
-                event.setCancelled(!handleRegionEvent(event.getPlayer(), event.getPlayer().getLocation(), false));
+    @EventHandler(priority = EventPriority.HIGHEST)
+    public void pistonEvent(BlockPistonExtendEvent event) {
+        BlockFace dir = event.getDirection();
+
+        Region region0 = PluginMain.instance.getRegionsRegistry().getRegionAt(event.getBlock().getRelative(dir).getLocation());
+        Region region1 = PluginMain.instance.getRegionsRegistry().getRegionAt(event.getBlock().getRelative(dir).getRelative(dir).getLocation());
+
+        if ((region0 == null && region1 != null)
+                || (region1 == null && region0 != null)) {
+            event.setCancelled(true);
+        }
+    }
+
+    @EventHandler(priority = EventPriority.HIGHEST)
+    public void pistonEvent(BlockPistonRetractEvent event) {
+        BlockFace dir = event.getDirection();
+
+        Region region0 = PluginMain.instance.getRegionsRegistry().getRegionAt(event.getBlock().getRelative(dir).getLocation());
+        Region region1 = PluginMain.instance.getRegionsRegistry().getRegionAt(event.getBlock().getRelative(dir).getRelative(dir).getLocation());
+
+        if ((region0 == null && region1 != null)
+                || (region1 == null && region0 != null)) {
+            event.setCancelled(true);
+        }
+    }
+
+    @EventHandler(priority = EventPriority.HIGHEST)
+    public void liquidSpread(BlockFromToEvent event) {
+        Region region0 = PluginMain.instance.getRegionsRegistry().getRegionAt(event.getBlock().getLocation());
+        Region region1 = PluginMain.instance.getRegionsRegistry().getRegionAt(event.getToBlock().getLocation());
+
+        if ((region0 == null && region1 != null)
+                || (region1 == null && region0 != null)) {
+            event.setCancelled(true);
+        }
+    }
+
+    @EventHandler(priority = EventPriority.HIGHEST)
+    public void playerInteract0(PlayerInteractEvent event) {
+        Block block = event.getClickedBlock();
+
+        if (event.getAction().equals(Action.LEFT_CLICK_AIR) || event.getAction().equals(Action.LEFT_CLICK_BLOCK))
+            return;
+
+        if (block != null) {
+            Location location = block.getLocation();
+
+            if (!event.getMaterial().isBlock()) {
+                event.setCancelled(!handleRegionEvent(event.getPlayer(), location, !Objects.equals(event.getHand(), EquipmentSlot.OFF_HAND)));
+                return;
             }
+
+            if (WorldUtils.isMaterialTransmitter(block.getType()) && WorldUtils.isMaterialTransmitter(event.getMaterial())) {
+                event.setCancelled(!handleRegionEvent(event.getPlayer(), location, !Objects.equals(event.getHand(), EquipmentSlot.OFF_HAND)));
+                return;
+            }
+
+            location.add(event.getBlockFace().getDirection());
+            event.setCancelled(!handleRegionEvent(event.getPlayer(), location, !Objects.equals(event.getHand(), EquipmentSlot.OFF_HAND)));
         }
     }
 
@@ -90,7 +183,7 @@ public class RegionEvents implements Listener {
     public void playerInteract1(EntityDamageByEntityEvent event) {
         if (event.getCause().equals(EntityDamageEvent.DamageCause.ENTITY_ATTACK)) {
             if (event.getDamager() instanceof Player)
-                event.setCancelled(!handleDamageEvent((Player) event.getDamager(), event.getEntity(), event.getDamager().getLocation(), RegionFlags.DISABLE_PVP, true));
+                event.setCancelled(!handleDamageEvent((Player) event.getDamager(), event.getEntity(), event.getDamager().getLocation(), RegionFlags.NO_PVP, true));
         }
     }
 
@@ -98,25 +191,28 @@ public class RegionEvents implements Listener {
     public void playerInteract2(EntityDamageEvent event) {
         if (event.getCause().equals(EntityDamageEvent.DamageCause.FALL)) {
             if (event.getEntity() instanceof Player)
-                event.setCancelled(!handleDamageEvent((Player) event.getEntity(), event.getEntity(), event.getEntity().getLocation(), RegionFlags.FALL_DISABLE_DAMAGE, false));
+                event.setCancelled(!handleDamageEvent((Player) event.getEntity(), event.getEntity(), event.getEntity().getLocation(), RegionFlags.NO_FALL_DAMAGE, false));
         }
     }
 
     @EventHandler(priority = EventPriority.HIGHEST)
-    public void playerInteract3(PlayerInteractAtEntityEvent event) {
-        // fixme: does not work with villagers
+    public void playerInteract3(PlayerInteractEntityEvent event) {
         event.setCancelled(!handleEntityEvent(event.getPlayer(), event.getRightClicked(), event.getRightClicked().getLocation(), true));
     }
 
     @EventHandler(priority = EventPriority.HIGHEST)
-    public void blockInteract0(BlockPlaceEvent event) {
-        event.setCancelled(!handleRegionEvent(event.getPlayer(), event.getBlock().getLocation(), true));
+    public void blockInteract0(BlockBreakEvent event) {
+        if (event.getBlock().hasMetadata("easyrg-region-outline")) {
+            event.setDropItems(false);
+        }
+        else
+            event.setCancelled(!handleRegionEvent(event.getPlayer(), event.getBlock().getLocation(), true));
     }
 
-    @EventHandler(priority = EventPriority.HIGHEST)
-    public void blockInteract1(BlockBreakEvent event) {
-        event.setCancelled(!handleRegionEvent(event.getPlayer(), event.getBlock().getLocation(), true));
-    }
+//    @EventHandler(priority = EventPriority.HIGHEST)
+//    public void blockInteract1(BlockPlaceEvent event) {
+//        event.setCancelled(!handleRegionEvent(event.getPlayer(), event.getBlockPlaced().getLocation(), true));
+//    }
 
     @EventHandler(priority = EventPriority.HIGHEST)
     public void blockInteract2(PlayerBedEnterEvent event) {

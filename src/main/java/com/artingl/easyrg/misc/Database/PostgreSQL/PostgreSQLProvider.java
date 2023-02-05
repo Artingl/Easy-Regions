@@ -42,6 +42,16 @@ public class PostgreSQLProvider implements DatabaseProvider {
     }
 
     @Override
+    public boolean delete(DatabaseModel model) {
+        return false;
+    }
+
+    @Override
+    public boolean update(DatabaseModel model) {
+        return false;
+    }
+
+    @Override
     public boolean getValue(Consumer<ResultSet> callback, DatabaseModel model, ModelCondition... keys) {
         return false;
     }

@@ -9,11 +9,11 @@ import org.bukkit.Material;
 import org.bukkit.World;
 import org.bukkit.block.Block;
 import org.bukkit.entity.Player;
+import org.bukkit.metadata.FixedMetadataValue;
+import org.bukkit.metadata.MetadataValue;
 import org.bukkit.util.BoundingBox;
 
-import java.util.List;
-
-public class OutlineCommandRunner implements CommandRunner {
+public class SelOutlineCommandRunner implements CommandRunner {
 
     @Override
     public boolean run(Player player, World world, String[] args) {
@@ -21,7 +21,8 @@ public class OutlineCommandRunner implements CommandRunner {
         SecondPositionItem pos2 = (SecondPositionItem) PluginMain.storage.getValue(player, SecondPositionItem.class);
 
         if (pos1 == null || pos2 == null) {
-            ChatUtils.sendDecoratedMessage(player, PluginMain.instance.getLanguage().get("sel-no-selection").toString());
+            ChatUtils.sendDecoratedMessage(player, PluginMain.instance.getLanguage().getString("sel-no-selection"));
+            PluginMain.instance.playCommandErrorSound(player);
             return false;
         }
 
@@ -32,19 +33,18 @@ public class OutlineCommandRunner implements CommandRunner {
         int maxY = Math.max(pos1.getLocation().getBlockY(), pos2.getLocation().getBlockY());
         int maxZ = Math.max(pos1.getLocation().getBlockZ(), pos2.getLocation().getBlockZ());
 
-        List<Region> regions = PluginMain.instance.getRegionsRegistry().getRegionCollide(
+        Region[] regions = PluginMain.instance.getRegionsRegistry().getRegionCollide(
                 new BoundingBox(minX, minY, minZ, maxX, maxY, maxZ)
         );
 
-        if (!regions.isEmpty()) {
+        if (regions != null) {
             for (Region region: regions) {
                 if (!region.hasAccess(player)) {
-                    ChatUtils.sendDecoratedMessage(player, PluginMain.instance.getLanguage().get("sel-overlaps-region").toString());
+                    ChatUtils.sendDecoratedMessage(player, PluginMain.instance.getLanguage().getString("sel-outline-overlaps"));
+                    PluginMain.instance.playCommandErrorSound(player);
                     return false;
                 }
             }
-
-            regions.clear();
         }
 
         for (int x = minX; x < maxX + 1; x++)
@@ -59,14 +59,16 @@ public class OutlineCommandRunner implements CommandRunner {
                             block = world.getBlockAt(x, y, z);
                         } else {
                             if (block == null)
-                                block = world.getBlockAt(x, y-1, z);
+                                block = world.getBlockAt(x, y - 1, z);
 
                             break;
                         }
                     }
 
-                    if (block != null)
+                    if (block != null) {
+                        block.setMetadata("easyrg-region-outline", new FixedMetadataValue(PluginMain.instance, true));
                         block.setType(Material.RED_WOOL);
+                    }
                 }
             }
 

@@ -8,32 +8,49 @@ import com.artingl.easyrg.misc.Database.Field.ModelCondition;
 import com.artingl.easyrg.misc.Database.Field.ModelField;
 import com.artingl.easyrg.misc.Regions.Region;
 import com.artingl.easyrg.misc.Regions.RegionFlags;
+import com.artingl.easyrg.misc.Regions.RegionMember;
 import com.artingl.easyrg.misc.Regions.RegionPosition;
 import com.google.gson.JsonArray;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
 import org.bukkit.Bukkit;
-import org.bukkit.util.BoundingBox;
+import org.bukkit.util.NumberConversions;
 
 import java.sql.SQLException;
 import java.util.*;
 
 public class RegionModel implements DatabaseModel {
 
-    public final ModelField<Double> minX = new ModelField<>("minX", "DOUBLE");
-    public final ModelField<Double> minY = new ModelField<>("minY", "DOUBLE");
-    public final ModelField<Double> minZ = new ModelField<>("minZ", "DOUBLE");
-    public final ModelField<Double> maxX = new ModelField<>("maxX", "DOUBLE");
-    public final ModelField<Double> maxY = new ModelField<>("maxY", "DOUBLE");
-    public final ModelField<Double> maxZ = new ModelField<>("maxZ", "DOUBLE");
+    public final ModelField<Integer> minX = new ModelField<>("minX", "INTEGER");
+    public final ModelField<Integer> minY = new ModelField<>("minY", "INTEGER");
+    public final ModelField<Integer> minZ = new ModelField<>("minZ", "INTEGER");
+    public final ModelField<Integer> maxX = new ModelField<>("maxX", "INTEGER");
+    public final ModelField<Integer> maxY = new ModelField<>("maxY", "INTEGER");
+    public final ModelField<Integer> maxZ = new ModelField<>("maxZ", "INTEGER");
 
     public final ModelField<String> world = new ModelField<>("world", "TEXT");
     public final ModelField<String> name = new ModelField<>("name", "TEXT");
-    public final ModelField<List<UUID>> members = new ModelField<>("members", "JSON");
+    public final ModelField<List<RegionMember>> members = new ModelField<>("members", "JSON");
     public final ModelField<Map<RegionFlags, Object>> flags = new ModelField<>("flags", "JSON");
 
     private final DatabaseProvider databaseProvider = PluginMain.instance.getDatabaseProvider();
+
+    public RegionModel() {
+    }
+
+    public RegionModel(Region region) {
+        minX.set(NumberConversions.floor(region.getBoundingBox().getMinX()));
+        minY.set(NumberConversions.floor(region.getBoundingBox().getMinY()));
+        minZ.set(NumberConversions.floor(region.getBoundingBox().getMinZ()));
+        maxX.set(NumberConversions.floor(region.getBoundingBox().getMaxX()));
+        maxY.set(NumberConversions.floor(region.getBoundingBox().getMaxY()));
+        maxZ.set(NumberConversions.floor(region.getBoundingBox().getMaxZ()));
+        world.set(region.getWorld().getName());
+        name.set(region.getName());
+        members.set(region.getMembers());
+        flags.set(region.getFlags());
+    }
 
     @Override
     public List<ModelField<?>> fields() {
@@ -77,56 +94,74 @@ public class RegionModel implements DatabaseModel {
     }
 
     @Override
-    public Region get(ModelCondition... keys) throws ModelNotExist, SQLException {
+    public Region[] get(ModelCondition... keys) throws NullPointerException, ModelNotExist, SQLException {
         synchronized (this) {
-            boolean result = databaseProvider.getValue((set) -> {
+            List<Region> regions = new ArrayList<>();
+
+            boolean result = databaseProvider.getValue((rs) -> {
                 try {
-                    minX.set(set.getDouble("minX"));
-                    minY.set(set.getDouble("minY"));
-                    minZ.set(set.getDouble("minZ"));
-                    maxX.set(set.getDouble("maxX"));
-                    maxY.set(set.getDouble("maxY"));
-                    maxZ.set(set.getDouble("maxZ"));
+                    do {
+                        flags.initializeMap();
+                        members.initializeList();
 
-                    world.set(set.getString("world"));
-                    name.set(set.getString("name"));
+                        if (rs.isClosed())
+                            break;
 
-                    flags.initializeMap();
-                    members.initializeList();
+                        JsonArray membersArray = new JsonParser().parse(rs.getString("members")).getAsJsonArray();
+                        JsonObject flagsObject = new JsonParser().parse(rs.getString("flags")).getAsJsonObject();
 
-                    JsonArray membersArray = new JsonParser().parse(set.getString("members")).getAsJsonArray();
-                    JsonObject flagsObject = new JsonParser().parse(set.getString("flags")).getAsJsonObject();
+                        for (JsonElement object : membersArray) {
+                            RegionMember member = new RegionMember();
 
-                    for (JsonElement object : membersArray)
-                        members.get().add(UUID.fromString(object.getAsString()));
+                            for (Map.Entry<String, JsonElement> entry : object.getAsJsonObject().entrySet()) {
+                                member.deserialize(entry.getKey(), entry.getValue());
+                            }
 
-                    for (Map.Entry<String, JsonElement> entry : flagsObject.entrySet()) {
-                        flags.get().put(RegionFlags.valueOf(entry.getKey()), entry.getValue());
-                    }
+                            members.get().add(member);
+                        }
 
-                } catch (SQLException e) {
-                    throw new RuntimeException(e);
+                        for (Map.Entry<String, JsonElement> entry : flagsObject.entrySet()) {
+                            RegionFlags flag = RegionFlags.valueOf(entry.getKey());
+
+                            flags.get().put(flag, flag.retrieveType(entry.getValue()));
+                        }
+
+                        regions.add(new Region(
+                                new RegionPosition(rs.getInt("minX"), rs.getInt("minY"), rs.getInt("minZ")),
+                                new RegionPosition(rs.getInt("maxX"), rs.getInt("maxY"), rs.getInt("maxZ")),
+                                Bukkit.getWorld(rs.getString("world")),
+                                members.get(),
+                                flags.get(),
+                                rs.getString("name")
+                        ));
+
+                        members.clear();
+                        flags.clear();
+
+                    } while (rs.next());
+
+                    members.clear();
+                    flags.clear();
+
+                } catch (SQLException ignored) {
                 }
             }, this, keys);
 
             if (!result)
                 throw new ModelNotExist("Unable to find RegionModel in the database.");
 
-            Region region = new Region(
-                    new RegionPosition(minX.get(), minY.get(), minZ.get()),
-                    new RegionPosition(maxX.get(), maxY.get(), maxZ.get()),
-                    Bukkit.getWorld(world.get()),
-                    members.get(),
-                    flags.get(),
-                    name.get()
-            );
-
-            members.clear();
-            flags.clear();
-
-            return region;
+            return regions.toArray(new Region[0]);
         }
     }
 
+    @Override
+    public boolean update() throws SQLException {
+        return databaseProvider.update(this);
+    }
+
+    @Override
+    public String identifierSQL() {
+        return "name='" + name.get() + "'";
+    }
 
 }

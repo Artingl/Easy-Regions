@@ -10,7 +10,7 @@ public class ClearCommandRunner implements CommandRunner {
     @Override
     public boolean run(Player player, World world, String[] args) {
         PluginMain.storage.remove(player.getUniqueId());
-        ChatUtils.sendDecoratedMessage(player, PluginMain.instance.getLanguage().get("sel-clear").toString());
+        ChatUtils.sendDecoratedMessage(player, PluginMain.instance.getLanguage().getString("sel-clear"));
 
         return true;
     }

@@ -10,13 +10,15 @@ import org.bukkit.World;
 import org.bukkit.entity.Player;
 
 import java.text.MessageFormat;
+import java.util.Objects;
 
 public class SetCommandRunner implements CommandRunner {
 
     @Override
     public boolean run(Player player, World world, String[] args) {
         if (args.length < 2) {
-            ChatUtils.sendDecoratedMessage(player, PluginMain.instance.getLanguage().get("not-enough-arguments-provided").toString());
+            ChatUtils.sendDecoratedMessage(player, PluginMain.instance.getLanguage().getString("not-enough-arguments-provided"));
+            PluginMain.instance.playCommandErrorSound(player);
             return false;
         }
 
@@ -28,11 +30,12 @@ public class SetCommandRunner implements CommandRunner {
         if (material == null) {
             ChatUtils.sendDecoratedMessage(player,
                     MessageFormat.format(
-                            PluginMain.instance.getLanguage().get("sel-set-invalid-block").toString(),
+                            Objects.requireNonNull(PluginMain.instance.getLanguage().getString("sel-set-invalid-block")),
                             key
                     )
             );
 
+            PluginMain.instance.playCommandErrorSound(player);
             return false;
         }
 
@@ -40,11 +43,12 @@ public class SetCommandRunner implements CommandRunner {
         SecondPositionItem pos2 = (SecondPositionItem) PluginMain.storage.getValue(player, SecondPositionItem.class);
 
         if (pos1 == null || pos2 == null) {
-            ChatUtils.sendDecoratedMessage(player, PluginMain.instance.getLanguage().get("sel-no-selection").toString());
+            ChatUtils.sendDecoratedMessage(player, PluginMain.instance.getLanguage().getString("sel-no-selection"));
+            PluginMain.instance.playCommandErrorSound(player);
             return false;
         }
 
-        ChatUtils.sendDecoratedMessage(player, PluginMain.instance.getLanguage().get("sel-processing").toString());
+        ChatUtils.sendDecoratedMessage(player, PluginMain.instance.getLanguage().getString("sel-processing"));
 
         Bukkit.getScheduler().runTaskAsynchronously(PluginMain.instance, () -> {
             int minX = Math.min(pos1.getLocation().getBlockX(), pos2.getLocation().getBlockX());

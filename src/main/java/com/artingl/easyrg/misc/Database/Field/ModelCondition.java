@@ -16,44 +16,80 @@ public class ModelCondition {
 
     public String getAsString() throws SQLException {
         StringBuilder result = new StringBuilder();
-
-        int state = 0;
+        Cond lastCondition = null;
 
         for (Object value: values) {
             if (value instanceof ModelField) {
-                if (state != 0)
-                    throw new SQLException("Invalid operand.");
-
-                result.append(((ModelField<?>) value).name());
-                state = 1;
+                ModelField<?> field = ((ModelField<?>) value);
+                result.append(field.name());
             }
-            else if (value instanceof Conditions) {
-                if (state != 1)
-                    throw new SQLException("Invalid operand.");
+            else if (value instanceof Cond) {
+                lastCondition = (Cond) value;
 
-                switch ((Conditions) value) {
+                switch ((Cond) value) {
                     case EQUALS: {
-                        result.append("=");
+                        result.append(" = ");
+                        break;
+                    }
+
+                    case LESS: {
+                        result.append(" < ");
+                        break;
+                    }
+
+                    case GREATER: {
+                        result.append(" > ");
+                        break;
+                    }
+
+                    case GREATER_OR_EQUAL: {
+                        result.append(" >= ");
+                        break;
+                    }
+
+                    case LESS_OR_EQUAL: {
+                        result.append(" <= ");
+                        break;
+                    }
+
+                    case AND: {
+                        result.append(" AND ");
+                        break;
+                    }
+
+                    case OR: {
+                        result.append(" OR ");
+                        break;
+                    }
+
+                    case CONTAINS: {
+                        result.append(" LIKE ");
                         break;
                     }
                 }
-
-                state = 2;
             }
             else {
-                if (state != 2)
-                    throw new SQLException("Invalid operand.");
+                if (Cond.CONTAINS.equals(lastCondition))
+                    result.append("'%");
 
-                result.append(value);
+                result.append(ModelField.serialize(value, !Cond.CONTAINS.equals(lastCondition)));
 
-                state = 0;
+                if (Cond.CONTAINS.equals(lastCondition))
+                    result.append("%'");
             }
         }
 
         return result.toString();
     }
 
-    public enum Conditions {
-        EQUALS
+    public enum Cond {
+        EQUALS,
+        GREATER_OR_EQUAL,
+        LESS_OR_EQUAL,
+        GREATER,
+        LESS,
+        AND,
+        OR,
+        CONTAINS,
     }
 }

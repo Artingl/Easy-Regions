@@ -14,8 +14,12 @@ public enum Permissions {
     COMMAND_SELECTION_CLEAR("commands.selection.clear"),
     COMMAND_SELECTION_OUTLINE("commands.selection.outline"),
     COMMAND_SELECTION_SET("commands.selection.set"),
-    COMMAND_RG_CREATE("commands.rg.create"),
+    COMMAND_RG_CLAIM("commands.rg.claim"),
     COMMAND_RG_INFO("commands.rg.info"),
+    COMMAND_RG_UNCLAIM("commands.rg.unclaim"),
+    COMMAND_RG_FLAG("commands.rg.flag"),
+    COMMAND_RG_ADD("commands.rg.add"),
+    COMMAND_RG_REMOVE("commands.rg.remove"),
     REGIONS_FULL_ACCESS("regions.full_access");
 
 

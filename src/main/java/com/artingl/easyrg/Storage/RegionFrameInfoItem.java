@@ -99,6 +99,10 @@ public class RegionFrameInfoItem extends StorageItem {
         return liveTime + ticksElapsed;
     }
 
+    public void setLiveTime(int i) {
+        this.liveTime = i;
+    }
+
     public Team getTeam() {
         return team;
     }

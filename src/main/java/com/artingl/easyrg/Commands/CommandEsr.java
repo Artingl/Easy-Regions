@@ -21,7 +21,7 @@ public class CommandEsr implements CommandExecutor, TabCompleter {
         StringBuilder result = new StringBuilder();
 
         result.append(MessageFormat.format(
-                PluginMain.instance.getLanguage().get("plugin-info").toString(),
+                Objects.requireNonNull(PluginMain.instance.getLanguage().getString("plugin-info")),
                 PluginMain.instance.getDescription().getVersion(),
                 "not found"
         )).append('\n');
@@ -38,7 +38,7 @@ public class CommandEsr implements CommandExecutor, TabCompleter {
     private boolean reload(CommandSender sender) {
         PluginMain.instance.reload();
         ChatUtils.sendDecoratedMessage(sender,
-                PluginMain.instance.getLanguage().get("plugin-reloaded").toString());
+                PluginMain.instance.getLanguage().getString("plugin-reloaded"));
 
         return true;
     }
@@ -46,7 +46,7 @@ public class CommandEsr implements CommandExecutor, TabCompleter {
     @Override
     public boolean onCommand(CommandSender sender, Command command, String label, String[] args) {
         if (!Permissions.hasPermission(sender, Permissions.COMMAND_ESR)) {
-            ChatUtils.sendDecoratedMessage(sender, PluginMain.instance.getLanguage().get("no-permissions").toString());
+            ChatUtils.sendDecoratedMessage(sender, PluginMain.instance.getLanguage().getString("no-permissions"));
 
             return false;
         }
@@ -54,7 +54,7 @@ public class CommandEsr implements CommandExecutor, TabCompleter {
         if (args.length == 0) {
             ChatUtils.sendDecoratedMessage(sender,
                     MessageFormat.format(
-                            PluginMain.instance.getLanguage().get("plugin-info").toString(),
+                            Objects.requireNonNull(PluginMain.instance.getLanguage().getString("plugin-info")),
                             PluginMain.instance.getDescription().getVersion(),
                             "not found"
                     )
@@ -67,7 +67,7 @@ public class CommandEsr implements CommandExecutor, TabCompleter {
 
         ChatUtils.sendDecoratedMessage(sender,
                 MessageFormat.format(
-                        PluginMain.instance.getLanguage().get("invalid-argument").toString(),
+                        Objects.requireNonNull(PluginMain.instance.getLanguage().getString("invalid-argument")),
                         args[0]
                 )
         );

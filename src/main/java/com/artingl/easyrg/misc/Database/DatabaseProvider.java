@@ -23,4 +23,7 @@ public interface DatabaseProvider {
 
     void freeStatement(Statement statement) throws SQLException;
 
+    boolean delete(DatabaseModel model) throws SQLException;
+
+    boolean update(DatabaseModel model) throws SQLException;
 }

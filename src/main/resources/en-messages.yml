@@ -1,9 +1,31 @@
 plugin-info: "Easy Regions v{0} | Updates info: {1}"
+region-info:
+  - " &8&l═════ &e&lRegion info &8&l═════ "
+  - " Region name: &e{name}"
+  - " Region members: &e{members}"
+  - " Region flags: {button-flags-backwards} &6{flags} {button-flags-forward}"
+  - " &8&l══════════════════ "
+
+region-player-hover:
+  - "Player name: &e&l{name}"
+  - "Member since: &e&l{since}"
+  - "Permissions: &e&l{permissions}"
+
+region-flag-hover:
+  - "Flag name: &e&l{name}"
+  - "Value: &e&l{value}"
+  - "Description: &e&l{description}"
 
 plugin-reloaded: "The plugin has been reloaded."
 invalid-argument: "&cInvalid argument &e{0}"
 not-enough-arguments-provided: "&cNot enough arguments provided!"
 no-permissions: "&cYou're not allowed to execute this command!"
+internal-error: "&cAn error occurred with the plugin! Check the console for more information."
+player-only-command: "&cThis command can be executed only by a player."
+player-not-found: "&cPlayer &e{0}&c not found."
+
+list-forward-click: "Click to go forward."
+list-backward-click: "Click to go backward."
 
 pos1-select: "First position has been set at &c{0} &a{1} &9{2}"
 pos2-select: "Second position has been set at &c{0} &a{1} &9{2}"
@@ -13,12 +35,30 @@ sel-clear: "Selection cleared."
 sel-no-selection: "Nothing was selected."
 sel-processing: "Please wait for the command to process..."
 sel-set-invalid-block: "&cInvalid block &e{0}"
-sel-overlaps-region: "&cSelection overlaps with region."
+sel-outline-overlaps: "&cSelection overlaps with region that you cannot interact with."
 
 region-name-exists: "&cRegion with the same name already exists."
 region-overlaps: "&cRegion overlaps with other region."
 region-created: "Region &e{0}&f successfully created."
 region-not-found: "&cNo regions were found at this place."
-
+region-not-exists: "&cRegion does not exist."
 region-restriction: "&cYou can't affect this region."
 region-flag-restriction: "&cYou can't do it in this region."
+region-no-permissions: "&cYou're not allow to control this region."
+region-removed: "Region &e{0}&f has been removed."
+region-member-added: "Player &e{0}&f was added to the region."
+region-member-exists: "&cPlayer &e{0}&c was already added to the region."
+region-not-a-member: "&cPlayer &e{0}&c is not a member of the region."
+region-one-member: "&cRegion should contain at least one member remaining."
+region-member-removed: "Player &e{0}&f was removed from the region."
+
+unable-to-save-region: "&cUnable to update the region. Contact the server's administrator."
+
+invalid-flag: "&cInvalid flag name &e{0}&f."
+invalid-flag-value: "&cInvalid flag value."
+flag-set: "Flag value &e{0}&f for region &e{1}&f is set to &e{2}"
+
+mob-spawn-flag-description: "Allows mob spawning in the region."
+no-pvp-flag-description: "Disables player PVP in the region."
+no-fall-damage-flag-description: "Disables fall damage in the region."
+allow-redstone-flag-description: "Allows redstone to interact with the one that's not inside region."

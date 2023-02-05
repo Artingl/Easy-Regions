@@ -1,9 +1,31 @@
 plugin-info: "Easy Regions v{0} | Информация об обновлениях: {1}"
+region-info:
+  - " &8&l═════ &e&lИнформация о регионе &8&l═════ "
+  - " Название региона: &e{name}"
+  - " Участники: &e{members}"
+  - " Флаги: {button-flags-backwards} &6{flags} {button-flags-forward}"
+  - " &8&l══════════════════ "
+
+region-player-hover:
+  - "Никнейм: &e&l{name}"
+  - "Дата вступления: &e&l{since}"
+  - "Права: &e&l{permissions}"
+
+region-flag-hover:
+  - "Имя флага: &e&l{name}"
+  - "Значенине: &e&l{value}"
+  - "Описание: &e&l{description}"
 
 plugin-reloaded: "Плагин перезагружен."
 invalid-argument: "&cНеверный аргумент &e{0}"
 not-enough-arguments-provided: "&cНедостаточно аргументов!"
 no-permissions: "&cУ вас нет разрешения на выполнение этой команды!"
+internal-error: "&cВ плагине произошла ошибка! Проверьте консоль для большей информации."
+player-only-command: "&cЭту команду может выполнить только игрок."
+player-not-found: "&cИгрок &e{0}&c не найден."
+
+list-forward-click: "Нажмите, чтобы переместиться вперед."
+list-backward-click: "Нажмите, чтобы переместиться назад."
 
 pos1-select: "Первая позиция была установлена в &c{0} &a{1} &9{2}"
 pos2-select: "Вторая позиция была установлена в &c{0} &a{1} &9{2}"
@@ -13,12 +35,30 @@ sel-clear: "Выделение удалено."
 sel-no-selection: "Область не выделена."
 sel-processing: "Подождите, пока команда будет обработана..."
 sel-set-invalid-block: "&cНеизвестный блок &e{0}"
-sel-overlaps-region: "&cВыделение пересекается с регионом."
+sel-outline-overlaps: "&cВыделение пересекается с регионом с которым вы не можете взаимодействовать."
 
 region-name-exists: "&cРегион с таким же названием уже существует."
 region-overlaps: "&cРегион пересекается с другим регионом."
 region-created: "Регион &e{0}&f успешно создан."
 region-not-found: "&cВ этом месте не существует региона."
-
+region-not-exists: "&cРегион не существует."
 region-restriction: "&cВы не можете взаимодействовать с этим регионом."
 region-flag-restriction: "&cВы не можете сделать это в этом регионе."
+region-no-permissions: "&cВы не можете управлять этим регионом."
+region-removed: "Регион &e{0}&f был удален."
+region-member-added: "Игрок &e{0}&f был добавлен в регион."
+region-member-exists: "Игрок &e{0}&f уже был добавлен в регион."
+region-not-a-member: "&cИгрок &e{0}&c не состоит в этом регионе."
+region-one-member: "&cВ регионе должен оставаться хотя бы один игрок."
+region-member-removed: "Игрок &e{0}&f был удален из региона."
+
+unable-to-save-region: "&cНеудалось обновить регион. Свяжитесь с администратором этого сервера."
+
+invalid-flag: "&cНеверный имя флага &e{0}&f."
+invalid-flag-value: "&cНеверное значение флага."
+flag-set: "Значение флага &e{0}&f для региона &e{1}&f было установлено на &e{2}"
+
+mob-spawn-flag-description: "Позволяет мобам спавниться в регионе."
+no-pvp-flag-description: "Отключает PVP между игроками."
+no-fall-damage-flag-description: "Отключает урон от падения."
+allow-redstone-flag-description: "Позволяет редстоуну взаимодействовать с тем, который находиться вне региона."

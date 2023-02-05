@@ -26,11 +26,54 @@ public class ModelField <T> {
         this.name = name;
     }
 
+    public String name() {
+        return name;
+    }
+
+    public T get() {
+        return value;
+    }
+
+    public void set(T value) {
+        this.value = value;
+    }
+
+    public String fieldSettings() {
+        return settings;
+    }
+
+    public void clear() {
+        if (value == null)
+            return;
+
+        if (value instanceof Map)
+            ((Map<?, ?>) value).clear();
+
+        if (value instanceof List)
+            ((List<?>) value).clear();
+
+        set(null);
+    }
+
+    public void initializeList() {
+        if (value == null)
+            value = (T) new ArrayList<>();
+        else
+            ((List<?>) value).clear();
+    }
+
+    public void initializeMap() {
+        if (value == null)
+            value = (T) new HashMap<>();
+        else
+            ((Map<?, ?>) value).clear();
+    }
+
     public String serialize() {
         return serialize(value, false);
     }
 
-    private String serialize(Object value, boolean quotes) {
+    public static String serialize(Object value, boolean quotes) {
         if (value instanceof String) {
             if (quotes)
                 return '\"' + (String) value + '\"';
@@ -87,48 +130,5 @@ public class ModelField <T> {
         }
 
         return null;
-    }
-
-    public String name() {
-        return name;
-    }
-
-    public T get() {
-        return value;
-    }
-
-    public void set(T value) {
-        this.value = value;
-    }
-
-    public String fieldSettings() {
-        return settings;
-    }
-
-    public void clear() {
-        if (value == null)
-            return;
-
-        if (value instanceof Map)
-            ((Map<?, ?>) value).clear();
-
-        if (value instanceof List)
-            ((List<?>) value).clear();
-
-        set(null);
-    }
-
-    public void initializeList() {
-        if (value == null)
-            value = (T) new ArrayList<>();
-        else
-            ((List<?>) value).clear();
-    }
-
-    public void initializeMap() {
-        if (value == null)
-            value = (T) new HashMap<>();
-        else
-            ((Map<?, ?>) value).clear();
     }
 }

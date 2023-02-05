@@ -4,6 +4,6 @@ public enum RegionClaimResult {
 
     SUCCESS,
     OVERLAPS_WITH_REGION,
-    NAME_EXISTS,
+    NAME_EXISTS, INTERNAL_ERROR,
 
 }

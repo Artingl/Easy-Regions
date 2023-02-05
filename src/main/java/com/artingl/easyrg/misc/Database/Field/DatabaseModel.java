@@ -12,6 +12,9 @@ public interface DatabaseModel {
 
     String name();
 
-    Object get(ModelCondition... keys) throws ModelNotExist, SQLException;
+    Object[] get(ModelCondition... keys) throws NullPointerException, ModelNotExist, SQLException;
 
+    String identifierSQL();
+
+    boolean update() throws SQLException;
 }

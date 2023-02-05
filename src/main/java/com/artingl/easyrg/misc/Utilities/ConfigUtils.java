@@ -14,7 +14,7 @@ public class ConfigUtils {
         Object soundKey = PluginMain.instance.getConfig()
                 .getConfigurationSection("region-selection")
                 .getConfigurationSection("sounds")
-                .get("region-selection1").toString();
+                .getString("region-selection1");
         if (soundKey != null) {
             int i = 0;
 
@@ -24,7 +24,7 @@ public class ConfigUtils {
                     soundKey = PluginMain.instance.getConfig()
                             .getConfigurationSection("region-selection")
                             .getConfigurationSection("sounds")
-                            .get("region-selection2").toString();
+                            .getString("region-selection2");
 
                     if (soundKey == null)
                         break;

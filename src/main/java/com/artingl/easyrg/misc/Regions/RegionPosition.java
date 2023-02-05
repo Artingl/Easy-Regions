@@ -4,11 +4,11 @@ import org.bukkit.Location;
 
 public class RegionPosition {
 
-    private final double x;
-    private final double y;
-    private final double z;
+    private final int x;
+    private final int y;
+    private final int z;
 
-    public RegionPosition(double x, double y, double z) {
+    public RegionPosition(int x, int y, int z) {
         this.x = x;
         this.y = y;
         this.z = z;
@@ -20,15 +20,15 @@ public class RegionPosition {
         this.z = location.getBlockZ();
     }
 
-    public double getX() {
+    public int getX() {
         return x;
     }
 
-    public double getY() {
+    public int getY() {
         return y;
     }
 
-    public double getZ() {
+    public int getZ() {
         return z;
     }
 
